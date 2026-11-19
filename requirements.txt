@@ -1,0 +1,5 @@
+Flask
+dnspython
+dkimpy
+python-dotenv
+cryptography

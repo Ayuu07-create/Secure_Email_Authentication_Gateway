@@ -1,0 +1,318 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0">
+
+<title>Email Authentication Gateway</title>
+
+<link rel="stylesheet"
+      href="{{ url_for('static', filename='style.css') }}">
+
+</head>
+
+<body>
+
+<div class="container">
+
+<header>
+
+<div class="badge">
+EMAIL SECURITY GATEWAY
+</div>
+
+<h1>
+Email Authentication Gateway
+</h1>
+
+<p>
+SPF · DKIM · DMARC
+</p>
+
+</header>
+
+
+<section class="card">
+
+<form method="POST">
+
+<label>
+Raw Email / Header
+</label>
+
+<textarea
+name="raw_email"
+placeholder="Paste the complete raw email or email headers here..."
+required>{{ raw_email }}</textarea>
+
+<button type="submit">
+Analyze Email
+</button>
+
+</form>
+
+</section>
+
+
+{% if error %}
+
+<div class="alert error">
+
+<strong>Analysis Error</strong>
+
+<p>{{ error }}</p>
+
+</div>
+
+{% endif %}
+
+
+{% if result %}
+
+<section>
+
+<h2>
+Authentication Summary
+</h2>
+
+
+<div class="status-grid">
+
+<div class="status-card">
+
+<span>SPF</span>
+
+<strong class="
+{% if result.authentication.spf == 'pass' %}
+pass
+{% else %}
+fail
+{% endif %}
+">
+
+{{ result.authentication.spf | upper }}
+
+</strong>
+
+</div>
+
+
+<div class="status-card">
+
+<span>DKIM</span>
+
+<strong class="
+{% if result.authentication.dkim == 'pass' %}
+pass
+{% else %}
+fail
+{% endif %}
+">
+
+{{ result.authentication.dkim | upper }}
+
+</strong>
+
+</div>
+
+
+<div class="status-card">
+
+<span>DMARC</span>
+
+<strong class="
+{% if result.authentication.dmarc == 'pass' %}
+pass
+{% else %}
+fail
+{% endif %}
+">
+
+{{ result.authentication.dmarc | upper }}
+
+</strong>
+
+</div>
+
+</div>
+
+
+<div class="card">
+
+<h3>Email Identity</h3>
+
+<p>
+<strong>From:</strong>
+{{ result.headers.from }}
+</p>
+
+<p>
+<strong>Return Path:</strong>
+{{ result.headers.return_path }}
+</p>
+
+<p>
+<strong>Domain:</strong>
+{{ result.domain }}
+</p>
+
+<p>
+<strong>Subject:</strong>
+{{ result.headers.subject }}
+</p>
+
+</div>
+
+
+{% if result.spf %}
+
+<div class="card">
+
+<h3>SPF Analysis</h3>
+
+<p>
+<strong>Status:</strong>
+{{ result.spf.status | upper }}
+</p>
+
+{% if result.spf.record %}
+
+<pre>{{ result.spf.record }}</pre>
+
+{% endif %}
+
+</div>
+
+{% endif %}
+
+
+{% if result.dkim %}
+
+<div class="card">
+
+<h3>DKIM Analysis</h3>
+
+<p>
+<strong>Domain:</strong>
+{{ result.dkim.domain }}
+</p>
+
+<p>
+<strong>Selector:</strong>
+{{ result.dkim.selector }}
+</p>
+
+<p>
+<strong>Algorithm:</strong>
+{{ result.dkim.algorithm }}
+</p>
+
+<p>
+<strong>DNS Public Key:</strong>
+{{ result.dkim.dns.status | upper }}
+</p>
+
+{% if result.dkim.dns.record %}
+
+<pre>{{ result.dkim.dns.record }}</pre>
+
+{% endif %}
+
+</div>
+
+{% endif %}
+
+
+{% if result.dmarc %}
+
+<div class="card">
+
+<h3>DMARC Analysis</h3>
+
+<p>
+<strong>Status:</strong>
+{{ result.dmarc.status | upper }}
+</p>
+
+{% if result.dmarc.policy %}
+
+<p>
+<strong>Policy:</strong>
+{{ result.dmarc.policy }}
+</p>
+
+<p>
+<strong>DKIM Alignment:</strong>
+{{ result.dmarc.dkim_alignment }}
+</p>
+
+<p>
+<strong>SPF Alignment:</strong>
+{{ result.dmarc.spf_alignment }}
+</p>
+
+{% endif %}
+
+{% if result.dmarc.record %}
+
+<pre>{{ result.dmarc.record }}</pre>
+
+{% endif %}
+
+</div>
+
+{% endif %}
+
+
+<div class="card">
+
+<h3>Security Assessment</h3>
+
+{% if
+result.authentication.spf == "pass"
+and result.authentication.dkim == "pass"
+and result.authentication.dmarc == "pass"
+%}
+
+<div class="secure">
+
+? AUTHENTICATED
+
+<p>
+SPF, DKIM and DMARC all returned PASS
+according to the supplied authentication results.
+</p>
+
+</div>
+
+{% else %}
+
+<div class="warning">
+
+? AUTHENTICATION REQUIRES ATTENTION
+
+<p>
+One or more authentication mechanisms
+did not return PASS.
+</p>
+
+</div>
+
+{% endif %}
+
+</div>
+
+</section>
+
+{% endif %}
+
+</div>
+
+</body>
+
+</html>
+
